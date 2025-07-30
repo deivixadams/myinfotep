@@ -1,0 +1,1345 @@
+<!DOCTYPE html>
+<html lang="es" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Médico</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts - Inter (para tipografía limpia) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Configuración de Tailwind CSS para colores personalizados y fuentes */
+        :root {
+            --color-primary-blue: #3B82F6;
+            --color-dark-blue: #1D4ED8;
+            --color-emerald-accent: #10B981;
+            --color-gray-100: #F3F4F6;
+            --color-200: #E5E7EB;
+            --color-gray-300: #D1D5DB;
+            --color-gray-400: #9CA3AF;
+            --color-gray-500: #6B7280;
+            --color-gray-600: #4B5563;
+            --color-gray-700: #374151;
+            --color-gray-800: #1F2937;
+            --color-gray-900: #111827;
+        }
+
+        /* Estilos para el modo oscuro */
+        .dark {
+            --color-bg-primary: var(--color-gray-900);
+            --color-bg-secondary: var(--color-gray-800);
+            --color-text-primary: var(--color-gray-100);
+            --color-text-secondary: var(--color-gray-300);
+            --color-border: var(--color-gray-700);
+            --color-card-bg: var(--color-gray-800);
+            --color-input-bg: var(--color-gray-700);
+            --color-input-text: var(--color-gray-100);
+        }
+
+        /* Estilos para el modo claro */
+        .light {
+            --color-bg-primary: var(--color-gray-100);
+            --color-bg-secondary: #FFFFFF;
+            --color-text-primary: var(--color-gray-900);
+            --color-text-secondary: var(--color-gray-600);
+            --color-border: var(--color-gray-200);
+            --color-card-bg: #FFFFFF;
+            --color-input-bg: #FFFFFF;
+            --color-input-text: var(--color-gray-900);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--color-bg-primary);
+            color: var(--color-text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .sidebar {
+            background-color: var(--color-bg-secondary);
+            border-right: 1px solid var(--color-border);
+            transition: transform 0.3s ease-in-out, width 0.3s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .sidebar-item {
+            color: var(--color-text-secondary);
+            transition: background-color 0.2s ease, color 0.2s ease;
+        }
+
+        .sidebar-item.active {
+            background-color: var(--color-primary-blue);
+            color: white;
+        }
+
+        .sidebar-item:hover:not(.active) {
+            background-color: var(--color-gray-200);
+            color: var(--color-text-primary);
+        }
+
+        .dark .sidebar-item:hover:not(.active) {
+            background-color: var(--color-gray-700);
+            color: var(--color-text-primary);
+        }
+
+        .card {
+            background-color: var(--color-card-bg);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 0.5rem;
+            transition: background-color 0.3s ease;
+        }
+
+        input, textarea, select {
+            background-color: var(--color-input-bg);
+            color: var(--color-input-text);
+            border: 1px solid var(--color-border);
+            transition: background-color 0.3s ease, border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            border-color: var(--color-primary-blue);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-primary {
+            background-color: var(--color-primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-dark-blue);
+        }
+
+        .btn-secondary {
+            background-color: var(--color-gray-200);
+            color: var(--color-gray-800);
+        }
+
+        .dark .btn-secondary {
+            background-color: var(--color-gray-700);
+            color: var(--color-gray-100);
+        }
+
+        .btn-secondary:hover {
+            background-color: var(--color-gray-300);
+        }
+
+        .dark .btn-secondary:hover {
+            background-color: var(--color-gray-600);
+        }
+
+        .btn-danger {
+            background-color: #EF4444; /* red-500 */
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #DC2626; /* red-600 */
+        }
+
+        .badge-pending {
+            background-color: #FCD34D; /* amber-300 */
+            color: #92400E; /* amber-800 */
+        }
+
+        .badge-confirmed {
+            background-color: #6EE7B7; /* emerald-300 */
+            color: #065F46; /* emerald-800 */
+        }
+
+        .badge-cancelled {
+            background-color: #FECACA; /* red-200 */
+            color: #991B1B; /* red-800 */
+        }
+
+        /* Estilos para el calendario (grid CSS) */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr); /* 7 días */
+            gap: 1px;
+            background-color: var(--color-border); /* Separadores de la cuadrícula */
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .calendar-header-cell, .calendar-time-cell, .calendar-day-cell {
+            background-color: var(--color-card-bg);
+            padding: 0.75rem;
+            text-align: center;
+            font-weight: 500;
+            color: var(--color-text-primary);
+        }
+
+        .calendar-day-cell {
+            min-height: 80px; /* Altura mínima para cada celda de día */
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .appointment-slot {
+            background-color: var(--color-primary-blue);
+            color: white;
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            margin-bottom: 0.25rem;
+            width: calc(100% - 1rem); /* Ajuste para padding */
+            font-size: 0.875rem;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .appointment-slot:hover {
+            background-color: var(--color-dark-blue);
+        }
+
+        .modal-overlay {
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        /* Animación para el sidebar */
+        .sidebar.collapsed {
+            width: 0;
+            transform: translateX(-100%);
+        }
+        .sidebar:not(.collapsed) {
+            width: 250px; /* Ancho por defecto del sidebar */
+            transform: translateX(0);
+        }
+        @media (max-width: 768px) {
+            .sidebar:not(.collapsed) {
+                width: 100%; /* Ocupa todo el ancho en móviles cuando está abierto */
+            }
+        }
+
+        /* Animación para el botón de cita urgente */
+        .urgent-button-pulse {
+            animation: pulse-red 1.5s infinite;
+        }
+
+        @keyframes pulse-red {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+        }
+
+        /* Estilos para ocultar scrollbar en algunos navegadores */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;  /* IE and Edge */
+            scrollbar-width: none;  /* Firefox */
+        }
+
+        /* Estilos para el contenedor principal para manejar el overflow */
+        .main-content-wrapper {
+            overflow-x: hidden; /* Evita el scroll horizontal en el contenido principal */
+        }
+    </style>
+</head>
+<body class="flex min-h-screen">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar fixed inset-y-0 left-0 z-40 w-64 md:w-64 flex flex-col pt-5 pb-4 overflow-y-auto no-scrollbar">
+        <div class="flex items-center justify-between px-4 mb-6">
+            <h1 class="text-2xl font-bold text-cyan-400 dark:text-cyan-300">FlashMed</h1>
+
+            <button id="sidebar-toggle-close" class="md:hidden text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none" aria-label="Cerrar barra lateral">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <nav class="flex-1 space-y-2 px-2">
+            <button class="sidebar-item flex items-center w-full px-4 py-2 rounded-md font-medium text-sm active" data-view="dashboard" aria-label="Ir al Dashboard">
+                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2 2v10a1 1 0 001 1h3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                Dashboard
+            </button>
+            <button class="sidebar-item flex items-center w-full px-4 py-2 rounded-md font-medium text-sm" data-view="doctors" aria-label="Gestionar Médicos">
+                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 01-4 4H6a4 4 0 00-4 4v1"></path></svg>
+                Médicos
+            </button>
+            <button class="sidebar-item flex items-center w-full px-4 py-2 rounded-md font-medium text-sm" data-view="appointments" aria-label="Gestionar Citas">
+                <svg class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                Citas
+            </button>
+        </nav>
+        <div class="px-4 mt-auto">
+            <button id="urgent-appointment-btn" class="w-full btn-danger py-3 rounded-md text-lg font-semibold flex items-center justify-center space-x-2 urgent-button-pulse" aria-label="Crear cita urgente">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                <span>Cita Urgente</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col md:ml-64 main-content-wrapper">
+        <!-- Header -->
+        <header class="bg-white dark:bg-gray-800 shadow-sm py-4 px-6 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+            <button id="sidebar-toggle-open" class="md:hidden text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none" aria-label="Abrir barra lateral">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+            </button>
+            <!-- Título del dashboard actualizado a "Dashboard Médico" -->
+            <h2 id="current-view-title" class="text-2xl font-semibold text-gray-900 dark:text-gray-100">Dashboard Médico</h2>
+            <button id="dark-mode-toggle" class="p-2 rounded-full text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none" aria-label="Alternar modo oscuro">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                </svg>
+            </button>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="flex-1 p-6 overflow-y-auto">
+            <!-- Dashboard View -->
+            <section id="dashboard-view" class="view active-view">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Citas de Hoy</h3>
+                        <div id="today-appointments-list" class="space-y-3 text-gray-600 dark:text-gray-300">
+                            <!-- Citas de hoy se cargarán aquí -->
+                            <p class="text-sm">No hay citas para hoy.</p>
+                        </div>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Próximas Citas</h3>
+                        <div id="upcoming-appointments-list" class="space-y-3 text-gray-600 dark:text-gray-300">
+                            <!-- Próximas citas se cargarán aquí -->
+                            <p class="text-sm">No hay próximas citas.</p>
+                        </div>
+                    </div>
+                    <div class="card p-6 flex flex-col justify-center items-center text-center">
+                        <h3 class="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-4">Resumen Rápido</h3>
+                        <p class="text-4xl font-bold text-primary-blue mb-2" id="total-doctors-count">0</p>
+                        <p class="text-gray-600 dark:text-gray-300">Médicos Registrados</p>
+                        <p class="text-4xl font-bold text-emerald-accent mt-4 mb-2" id="total-appointments-count">0</p>
+                        <p class="text-gray-600 dark:text-gray-300">Citas Totales</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Doctors View -->
+            <section id="doctors-view" class="view hidden">
+                <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">Gestión de Médicos</h2>
+
+                <!-- Formulario de Registro de Médicos -->
+                <div class="card p-6 mb-8">
+                    <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Registrar Nuevo Médico</h3>
+                    <form id="doctor-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="doctor-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nombre</label>
+                            <input type="text" id="doctor-name" name="name" class="w-full p-2 border rounded-md focus:ring-primary-blue" placeholder="Nombre completo" required aria-required="true">
+                            <p class="text-red-500 text-xs mt-1 hidden" id="doctor-name-error">El nombre es requerido.</p>
+                        </div>
+                        <div>
+                            <label for="doctor-specialty" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Especialidad</label>
+                            <input type="text" id="doctor-specialty" name="specialty" class="w-full p-2 border rounded-md focus:ring-primary-blue" placeholder="Ej: Cardiología" required aria-required="true">
+                            <p class="text-red-500 text-xs mt-1 hidden" id="doctor-specialty-error">La especialidad es requerida.</p>
+                        </div>
+                        <div>
+                            <label for="doctor-phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Teléfono</label>
+                            <input type="tel" id="doctor-phone" name="phone" class="w-full p-2 border rounded-md focus:ring-primary-blue" placeholder="Ej: +1 (809) 123-4567" required aria-required="true">
+                            <p class="text-red-500 text-xs mt-1 hidden" id="doctor-phone-error">El teléfono es requerido y debe ser válido.</p>
+                        </div>
+                        <div>
+                            <label for="doctor-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                            <input type="email" id="doctor-email" name="email" class="w-full p-2 border rounded-md focus:ring-primary-blue" placeholder="ejemplo@dominio.com" required aria-required="true">
+                            <p class="text-red-500 text-xs mt-1 hidden" id="doctor-email-error">El email es requerido y debe ser válido.</p>
+                        </div>
+                        <div class="md:col-span-2 flex justify-end space-x-3 mt-4">
+                            <button type="button" id="clear-doctor-form" class="btn-secondary py-2 px-4 rounded-md font-medium" aria-label="Limpiar formulario de médico">Limpiar</button>
+                            <button type="submit" class="btn-primary py-2 px-4 rounded-md font-medium" aria-label="Guardar médico">Guardar Médico</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Lista de Médicos Registrados -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Lista de Médicos</h3>
+                    <div class="mb-4">
+                        <input type="text" id="doctor-search" class="w-full p-2 border rounded-md focus:ring-primary-blue" placeholder="Buscar médico por nombre o especialidad..." aria-label="Buscar médico">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Nombre</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Especialidad</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Teléfono</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                                    <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="doctors-table-body" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <!-- Médicos se cargarán aquí -->
+                                <tr>
+                                    <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">No hay médicos registrados.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Appointments View -->
+            <section id="appointments-view" class="view hidden">
+                <h2 class="text-3xl font-bold mb-6 text-gray-900 dark:text-gray-100">Gestión de Citas</h2>
+
+                <!-- Formulario de Registro de Citas -->
+                <div class="card p-6 mb-8">
+                    <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Agendar Nueva Cita</h3>
+                    <form id="appointment-form" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="appointment-patient" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Paciente</label>
+                            <input type="text" id="appointment-patient" name="patient" class="w-full p-2 border rounded-md focus:ring-primary-blue" placeholder="Nombre del paciente" required aria-required="true">
+                            <p class="text-red-500 text-xs mt-1 hidden" id="appointment-patient-error">El nombre del paciente es requerido.</p>
+                        </div>
+                        <div>
+                            <label for="appointment-doctor" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Médico</label>
+                            <select id="appointment-doctor" name="doctorId" class="w-full p-2 border rounded-md focus:ring-primary-blue" required aria-required="true">
+                                <option value="">Seleccione un médico</option>
+                                <!-- Médicos se cargarán aquí -->
+                            </select>
+                            <p class="text-red-500 text-xs mt-1 hidden" id="appointment-doctor-error">Debe seleccionar un médico.</p>
+                        </div>
+                        <div>
+                            <label for="appointment-datetime" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Fecha y Hora</label>
+                            <input type="datetime-local" id="appointment-datetime" name="datetime" class="w-full p-2 border rounded-md focus:ring-primary-blue" required aria-required="true">
+                            <p class="text-red-500 text-xs mt-1 hidden" id="appointment-datetime-error">La fecha y hora son requeridas y deben ser futuras.</p>
+                        </div>
+                        <div>
+                            <label for="appointment-reason" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Motivo</label>
+                            <textarea id="appointment-reason" name="reason" class="w-full p-2 border rounded-md focus:ring-primary-blue" rows="2" placeholder="Motivo de la cita" required aria-required="true"></textarea>
+                            <p class="text-red-500 text-xs mt-1 hidden" id="appointment-reason-error">El motivo es requerido.</p>
+                        </div>
+                        <div class="md:col-span-2 flex justify-end space-x-3 mt-4">
+                            <button type="button" id="clear-appointment-form" class="btn-secondary py-2 px-4 rounded-md font-medium" aria-label="Limpiar formulario de cita">Limpiar</button>
+                            <button type="submit" class="btn-primary py-2 px-4 rounded-md font-medium" aria-label="Agendar cita">Agendar Cita</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Calendario Semanal de Citas -->
+                <div class="card p-6">
+                    <h3 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4">Calendario Semanal</h3>
+                    <div class="flex justify-between items-center mb-4">
+                        <button id="prev-week" class="btn-secondary py-1 px-3 rounded-md" aria-label="Semana anterior">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                        </button>
+                        <span id="current-week-range" class="font-semibold text-gray-800 dark:text-gray-100"></span>
+                        <button id="next-week" class="btn-secondary py-1 px-3 rounded-md" aria-label="Semana siguiente">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                        </button>
+                    </div>
+                    <div id="calendar-grid" class="calendar-grid">
+                        <!-- Cabeceras de días y celdas de tiempo se generarán aquí -->
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal de Confirmación -->
+    <div id="confirmation-modal" class="modal-overlay fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Confirmar Acción</h3>
+            <p id="modal-message" class="text-gray-700 dark:text-gray-300 mb-6">¿Estás seguro de que quieres realizar esta acción?</p>
+            <div class="flex justify-end space-x-3">
+                <button id="modal-cancel" class="btn-secondary py-2 px-4 rounded-md font-medium" aria-label="Cancelar">Cancelar</button>
+                <button id="modal-confirm" class="btn-danger py-2 px-4 rounded-md font-medium" aria-label="Confirmar">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Alerta/Información -->
+    <div id="info-modal" class="modal-overlay fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 class="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">Información</h3>
+            <p id="info-modal-message" class="text-gray-700 dark:text-gray-300 mb-6"></p>
+            <div class="flex justify-end">
+                <button id="info-modal-close" class="btn-primary py-2 px-4 rounded-md font-medium" aria-label="Cerrar">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // === Variables Globales y Selectores ===
+        const sidebar = document.getElementById('sidebar');
+        const sidebarToggleOpen = document.getElementById('sidebar-toggle-open');
+        const sidebarToggleClose = document.getElementById('sidebar-toggle-close');
+        const darkModeToggle = document.getElementById('dark-mode-toggle');
+        const currentViewTitle = document.getElementById('current-view-title');
+        const viewButtons = document.querySelectorAll('.sidebar-item');
+        const views = document.querySelectorAll('.view');
+
+        // Módulo Médicos
+        const doctorForm = document.getElementById('doctor-form');
+        const doctorNameInput = document.getElementById('doctor-name');
+        const doctorSpecialtyInput = document.getElementById('doctor-specialty');
+        const doctorPhoneInput = document.getElementById('doctor-phone');
+        const doctorEmailInput = document.getElementById('doctor-email');
+        const clearDoctorFormBtn = document.getElementById('clear-doctor-form');
+        const doctorsTableBody = document.getElementById('doctors-table-body');
+        const doctorSearchInput = document.getElementById('doctor-search');
+        let editingDoctorId = null; // Para saber si estamos editando o añadiendo
+
+        // Módulo Citas
+        const appointmentForm = document.getElementById('appointment-form');
+        const appointmentPatientInput = document.getElementById('appointment-patient');
+        const appointmentDoctorSelect = document.getElementById('appointment-doctor');
+        const appointmentDatetimeInput = document.getElementById('appointment-datetime');
+        const appointmentReasonInput = document.getElementById('appointment-reason');
+        const clearAppointmentFormBtn = document.getElementById('clear-appointment-form');
+        const calendarGrid = document.getElementById('calendar-grid');
+        const prevWeekBtn = document.getElementById('prev-week');
+        const nextWeekBtn = document.getElementById('next-week');
+        const currentWeekRangeSpan = document.getElementById('current-week-range');
+        const urgentAppointmentBtn = document.getElementById('urgent-appointment-btn');
+
+        // Dashboard
+        const todayAppointmentsList = document.getElementById('today-appointments-list');
+        const upcomingAppointmentsList = document.getElementById('upcoming-appointments-list');
+        const totalDoctorsCount = document.getElementById('total-doctors-count');
+        const totalAppointmentsCount = document.getElementById('total-appointments-count');
+
+        // Modales
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm');
+        const modalCancelBtn = document.getElementById('modal-cancel');
+
+        const infoModal = document.getElementById('info-modal');
+        const infoModalMessage = document.getElementById('info-modal-message');
+        const infoModalCloseBtn = document.getElementById('info-modal-close');
+
+        // Arrays para almacenar datos (se cargarán de LocalStorage)
+        let doctors = [];
+        let appointments = [];
+        let currentCalendarWeek = new Date(); // Para el calendario semanal
+
+        // === Funciones de Utilidad ===
+
+        /**
+         * Guarda datos en LocalStorage.
+         * @param {string} key - La clave para almacenar los datos.
+         * @param {Array<Object>} data - El array de objetos a guardar.
+         */
+        function saveData(key, data) {
+            try {
+                localStorage.setItem(key, JSON.stringify(data));
+            } catch (e) {
+                console.error(`Error al guardar en localStorage para la clave ${key}:`, e);
+                showInfoModal('Error: No se pudo guardar los datos. El almacenamiento local podría estar lleno o deshabilitado.');
+            }
+        }
+
+        /**
+         * Carga datos de LocalStorage.
+         * @param {string} key - La clave de donde cargar los datos.
+         * @returns {Array<Object>} - El array de objetos cargado o un array vacío si no hay datos.
+         */
+        function loadData(key) {
+            try {
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                console.error(`Error al cargar de localStorage para la clave ${key}:`, e);
+                showInfoModal('Error: No se pudieron cargar los datos. El almacenamiento local podría estar corrupto.');
+                return []; // Retorna un array vacío para evitar errores en la aplicación
+            }
+        }
+
+        /**
+         * Genera un ID único.
+         * @returns {string} Un ID único.
+         */
+        function generateUniqueId() {
+            return Date.now().toString(36) + Math.random().toString(36).substr(2);
+        }
+
+        /**
+         * Muestra el modal de confirmación.
+         * @param {string} message - El mensaje a mostrar en el modal.
+         * @param {Function} onConfirmCallback - La función a ejecutar si se confirma.
+         */
+        function showConfirmationModal(message, onConfirmCallback) {
+            modalMessage.innerHTML = message; // Cambiado a innerHTML para permitir HTML en el mensaje
+            confirmationModal.classList.remove('hidden');
+
+            const confirmHandler = () => {
+                onConfirmCallback();
+                confirmationModal.classList.add('hidden');
+                modalConfirmBtn.removeEventListener('click', confirmHandler);
+                modalCancelBtn.removeEventListener('click', cancelHandler);
+            };
+
+            const cancelHandler = () => {
+                confirmationModal.classList.add('hidden');
+                modalConfirmBtn.removeEventListener('click', confirmHandler);
+                modalCancelBtn.removeEventListener('click', cancelHandler);
+            };
+
+            modalConfirmBtn.addEventListener('click', confirmHandler);
+            modalCancelBtn.addEventListener('click', cancelHandler);
+        }
+
+        /**
+         * Muestra el modal de información/alerta.
+         * @param {string} message - El mensaje a mostrar.
+         */
+        function showInfoModal(message) {
+            infoModalMessage.textContent = message;
+            infoModal.classList.remove('hidden');
+
+            const closeHandler = () => {
+                infoModal.classList.add('hidden');
+                infoModalCloseBtn.removeEventListener('click', closeHandler);
+            };
+            infoModalCloseBtn.addEventListener('click', closeHandler);
+        }
+
+        /**
+         * Valida un campo de formulario y muestra/oculta mensajes de error.
+         * @param {HTMLElement} inputElement - El elemento de input a validar.
+         * @param {HTMLElement} errorElement - El elemento donde mostrar el error.
+         * @returns {boolean} True si el campo es válido, false en caso contrario.
+         */
+        function validateField(inputElement, errorElement) {
+            if (!inputElement.value.trim()) {
+                errorElement.classList.remove('hidden');
+                return false;
+            }
+            errorElement.classList.add('hidden');
+            return true;
+        }
+
+        /**
+         * Valida un email.
+         * @param {HTMLElement} inputElement - El elemento de input del email.
+         * @param {HTMLElement} errorElement - El elemento donde mostrar el error.
+         * @returns {boolean} True si el email es válido, false en caso contrario.
+         */
+        function validateEmail(inputElement, errorElement) {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!inputElement.value.trim() || !emailRegex.test(inputElement.value.trim())) {
+                errorElement.textContent = 'Ingrese un email válido.';
+                errorElement.classList.remove('hidden');
+                return false;
+            }
+            errorElement.classList.add('hidden');
+            return true;
+        }
+
+        /**
+         * Valida un número de teléfono.
+         * @param {HTMLElement} inputElement - El elemento de input del teléfono.
+         * @param {HTMLElement} errorElement - El elemento donde mostrar el error.
+         * @returns {boolean} True si el teléfono es válido, false en caso contrario.
+         */
+        function validatePhone(inputElement, errorElement) {
+            const phoneRegex = /^\+?(\d[\d\s-()]{7,20}\d)$/; // Permite +, dígitos, espacios, guiones, paréntesis
+            if (!inputElement.value.trim() || !phoneRegex.test(inputElement.value.trim())) {
+                errorElement.textContent = 'Ingrese un número de teléfono válido.';
+                errorElement.classList.remove('hidden');
+                return false;
+            }
+            errorElement.classList.add('hidden');
+            return true;
+        }
+
+        /**
+         * Valida la fecha y hora de una cita.
+         * @param {HTMLElement} inputElement - El elemento de input datetime-local.
+         * @param {HTMLElement} errorElement - El elemento donde mostrar el error.
+         * @returns {boolean} True si la fecha/hora es válida y futura, false en caso contrario.
+         */
+        function validateDateTime(inputElement, errorElement) {
+            if (!inputElement.value) {
+                errorElement.textContent = 'La fecha y hora son requeridas.';
+                errorElement.classList.remove('hidden');
+                return false;
+            }
+            const selectedDateTime = new Date(inputElement.value);
+            const now = new Date();
+            // Normalizar 'now' para comparar solo fecha y hora, no milisegundos
+            now.setSeconds(0, 0);
+            selectedDateTime.setSeconds(0, 0);
+
+            if (selectedDateTime <= now) {
+                errorElement.textContent = 'La fecha y hora deben ser futuras.';
+                errorElement.classList.remove('hidden');
+                return false;
+            }
+            errorElement.classList.add('hidden');
+            return true;
+        }
+
+        // === Funcionalidades Generales del Dashboard ===
+
+        /**
+         * Alterna la visibilidad del sidebar.
+         */
+        function toggleSidebar() {
+            sidebar.classList.toggle('collapsed');
+            // Ajustar el margen del contenido principal para que no se superponga
+            const mainContent = document.querySelector('.main-content-wrapper');
+            if (sidebar.classList.contains('collapsed')) {
+                mainContent.classList.remove('md:ml-64');
+                mainContent.classList.add('md:ml-0');
+            } else {
+                mainContent.classList.remove('md:ml-0');
+                mainContent.classList.add('md:ml-64');
+            }
+        }
+
+        /**
+         * Cambia la vista activa del dashboard.
+         * @param {string} viewId - El ID de la vista a activar (ej. 'dashboard', 'doctors').
+         */
+        function switchView(viewId) {
+            views.forEach(view => {
+                view.classList.add('hidden');
+                view.classList.remove('active-view');
+            });
+            document.getElementById(`${viewId}-view`).classList.remove('hidden');
+            document.getElementById(`${viewId}-view`).classList.add('active-view');
+
+            viewButtons.forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelector(`.sidebar-item[data-view="${viewId}"]`).classList.add('active');
+
+            // Actualizar el título del header
+            const viewTitles = {
+                'dashboard': 'Dashboard Médico', // Título actualizado aquí
+                'doctors': 'Gestión de Médicos',
+                'appointments': 'Gestión de Citas'
+            };
+            currentViewTitle.textContent = viewTitles[viewId] || 'Dashboard Médico'; // También aquí
+
+            // Si cambiamos a la vista de citas, asegurarnos de cargar los médicos en el selector
+            if (viewId === 'appointments') {
+                populateDoctorSelect();
+                renderCalendar(currentCalendarWeek);
+            }
+            // Si cambiamos a la vista de médicos, asegurarse de renderizar la tabla
+            if (viewId === 'doctors') {
+                renderDoctorsTable();
+            }
+            // Si cambiamos al dashboard, actualizar los resúmenes
+            if (viewId === 'dashboard') {
+                updateDashboardSummary();
+            }
+
+            // En móviles, colapsar el sidebar al cambiar de vista
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        /**
+         * Alterna el modo oscuro/claro.
+         */
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        /**
+         * Inicializa el modo oscuro basado en la preferencia del usuario o del sistema.
+         */
+        function initializeDarkMode() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme) {
+                document.documentElement.classList[savedTheme === 'dark' ? 'add' : 'remove']('dark');
+            } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+        }
+
+        // === Módulo Médicos ===
+
+        /**
+         * Renderiza la tabla de médicos.
+         * @param {Array<Object>} [filteredDoctors=doctors] - Lista de médicos a renderizar (por defecto, todos).
+         */
+        function renderDoctorsTable(filteredDoctors = doctors) {
+            doctorsTableBody.innerHTML = ''; // Limpiar tabla
+            if (filteredDoctors.length === 0) {
+                doctorsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-center">No hay médicos registrados.</td>
+                    </tr>
+                `;
+                return;
+            }
+
+            filteredDoctors.forEach(doctor => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100">${doctor.name}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${doctor.specialty}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${doctor.phone}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">${doctor.email}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <button class="text-primary-blue hover:text-dark-blue mr-3 edit-doctor-btn" data-id="${doctor.id}" aria-label="Editar médico ${doctor.name}">Editar</button>
+                        <button class="text-red-600 hover:text-red-900 delete-doctor-btn" data-id="${doctor.id}" aria-label="Eliminar médico ${doctor.name}">Eliminar</button>
+                    </td>
+                `;
+                doctorsTableBody.appendChild(row);
+            });
+
+            // Añadir event listeners a los botones de editar/eliminar
+            document.querySelectorAll('.edit-doctor-btn').forEach(button => {
+                button.addEventListener('click', (e) => editDoctor(e.target.dataset.id));
+            });
+            document.querySelectorAll('.delete-doctor-btn').forEach(button => {
+                button.addEventListener('click', (e) => deleteDoctor(e.target.dataset.id));
+            });
+        }
+
+        /**
+         * Maneja el envío del formulario de médico (añadir/editar).
+         * @param {Event} e - El evento de envío del formulario.
+         */
+        function handleDoctorFormSubmit(e) {
+            e.preventDefault();
+
+            // Validación de todos los campos
+            const isNameValid = validateField(doctorNameInput, document.getElementById('doctor-name-error'));
+            const isSpecialtyValid = validateField(doctorSpecialtyInput, document.getElementById('doctor-specialty-error'));
+            const isPhoneValid = validatePhone(doctorPhoneInput, document.getElementById('doctor-phone-error'));
+            const isEmailValid = validateEmail(doctorEmailInput, document.getElementById('doctor-email-error'));
+
+            if (!isNameValid || !isSpecialtyValid || !isPhoneValid || !isEmailValid) {
+                showInfoModal('Por favor, complete todos los campos correctamente.');
+                return;
+            }
+
+            const newDoctor = {
+                name: doctorNameInput.value.trim(),
+                specialty: doctorSpecialtyInput.value.trim(),
+                phone: doctorPhoneInput.value.trim(),
+                email: doctorEmailInput.value.trim()
+            };
+
+            if (editingDoctorId) {
+                // Editar médico existente
+                const doctorIndex = doctors.findIndex(d => d.id === editingDoctorId);
+                if (doctorIndex !== -1) {
+                    doctors[doctorIndex] = { ...doctors[doctorIndex], ...newDoctor };
+                    showInfoModal('Médico actualizado exitosamente.');
+                }
+                editingDoctorId = null; // Resetear el modo edición
+            } else {
+                // Añadir nuevo médico
+                newDoctor.id = generateUniqueId();
+                doctors.push(newDoctor);
+                showInfoModal('Médico registrado exitosamente.');
+            }
+
+            saveData('doctors', doctors);
+            clearDoctorForm();
+            renderDoctorsTable();
+            populateDoctorSelect(); // Actualizar el selector de médicos en el módulo de citas
+            updateDashboardSummary(); // Actualizar el resumen del dashboard
+        }
+
+        /**
+         * Rellena el formulario de médico para edición.
+         * @param {string} id - El ID del médico a editar.
+         */
+        function editDoctor(id) {
+            const doctor = doctors.find(d => d.id === id);
+            if (doctor) {
+                doctorNameInput.value = doctor.name;
+                doctorSpecialtyInput.value = doctor.specialty;
+                doctorPhoneInput.value = doctor.phone;
+                doctorEmailInput.value = doctor.email;
+                editingDoctorId = doctor.id;
+                // Scroll al formulario
+                doctorForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        /**
+         * Elimina un médico.
+         * @param {string} id - El ID del médico a eliminar.
+         */
+        function deleteDoctor(id) {
+            showConfirmationModal('¿Estás seguro de que quieres eliminar a este médico? Se eliminarán también todas sus citas.', () => {
+                doctors = doctors.filter(d => d.id !== id);
+                // Eliminar también las citas asociadas a este médico
+                appointments = appointments.filter(a => a.doctorId !== id);
+                saveData('doctors', doctors);
+                saveData('appointments', appointments);
+                renderDoctorsTable();
+                populateDoctorSelect(); // Actualizar el selector de médicos
+                renderCalendar(currentCalendarWeek); // Actualizar calendario
+                updateDashboardSummary(); // Actualizar resumen
+                showInfoModal('Médico y sus citas eliminados exitosamente.');
+            });
+        }
+
+        /**
+         * Limpia el formulario de médico.
+         */
+        function clearDoctorForm() {
+            doctorForm.reset();
+            editingDoctorId = null;
+            // Ocultar todos los mensajes de error
+            document.querySelectorAll('#doctor-form p.text-red-500').forEach(p => p.classList.add('hidden'));
+        }
+
+        /**
+         * Filtra la tabla de médicos según la búsqueda.
+         */
+        function filterDoctors() {
+            const searchTerm = doctorSearchInput.value.toLowerCase();
+            const filtered = doctors.filter(doctor =>
+                doctor.name.toLowerCase().includes(searchTerm) ||
+                doctor.specialty.toLowerCase().includes(searchTerm)
+            );
+            renderDoctorsTable(filtered);
+        }
+
+        // === Módulo Citas ===
+
+        /**
+         * Rellena el selector de médicos en el formulario de citas.
+         */
+        function populateDoctorSelect() {
+            appointmentDoctorSelect.innerHTML = '<option value="">Seleccione un médico</option>';
+            doctors.forEach(doctor => {
+                const option = document.createElement('option');
+                option.value = doctor.id;
+                option.textContent = `${doctor.name} (${doctor.specialty})`;
+                appointmentDoctorSelect.appendChild(option);
+            });
+        }
+
+        /**
+         * Maneja el envío del formulario de citas.
+         * @param {Event} e - El evento de envío del formulario.
+         */
+        function handleAppointmentFormSubmit(e) {
+            e.preventDefault();
+
+            // Validación de todos los campos
+            const isPatientValid = validateField(appointmentPatientInput, document.getElementById('appointment-patient-error'));
+            const isDoctorValid = validateField(appointmentDoctorSelect, document.getElementById('appointment-doctor-error'));
+            const isDateTimeValid = validateDateTime(appointmentDatetimeInput, document.getElementById('appointment-datetime-error'));
+            const isReasonValid = validateField(appointmentReasonInput, document.getElementById('appointment-reason-error'));
+
+            if (!isPatientValid || !isDoctorValid || !isDateTimeValid || !isReasonValid) {
+                showInfoModal('Por favor, complete todos los campos de la cita correctamente.');
+                return;
+            }
+
+            const newAppointment = {
+                id: generateUniqueId(),
+                patient: appointmentPatientInput.value.trim(),
+                doctorId: appointmentDoctorSelect.value,
+                datetime: appointmentDatetimeInput.value, // Formato ISO string
+                reason: appointmentReasonInput.value.trim(),
+                status: 'pending' // Estado inicial
+            };
+
+            // Comprobar conflictos de horario
+            if (checkAppointmentConflict(newAppointment)) {
+                showInfoModal('Conflicto de horario: Ya existe una cita para este médico a esta hora.');
+                return;
+            }
+
+            appointments.push(newAppointment);
+            saveData('appointments', appointments);
+            showInfoModal('Cita agendada exitosamente.');
+            clearAppointmentForm();
+            renderCalendar(currentCalendarWeek); // Actualizar el calendario
+            updateDashboardSummary(); // Actualizar el resumen del dashboard
+        }
+
+        /**
+         * Comprueba si hay un conflicto de horario para una nueva cita.
+         * Un conflicto ocurre si el mismo médico tiene otra cita a la misma hora.
+         * @param {Object} newAppointment - La nueva cita a comprobar.
+         * @returns {boolean} True si hay conflicto, false en caso contrario.
+         */
+        function checkAppointmentConflict(newAppointment) {
+            const newAppointmentTime = new Date(newAppointment.datetime).getTime();
+            // Asumimos que las citas son de 30 minutos para simplicidad de conflicto
+            const newAppointmentEndTime = newAppointmentTime + (30 * 60 * 1000);
+
+            return appointments.some(existingAppointment => {
+                if (existingAppointment.doctorId !== newAppointment.doctorId) {
+                    return false; // No es el mismo médico
+                }
+
+                const existingAppointmentTime = new Date(existingAppointment.datetime).getTime();
+                const existingAppointmentEndTime = existingAppointmentTime + (30 * 60 * 1000);
+
+                // Comprobar si los rangos de tiempo se superponen
+                return (
+                    (newAppointmentTime < existingAppointmentEndTime && newAppointmentEndTime > existingAppointmentTime) ||
+                    (existingAppointmentTime < newAppointmentEndTime && existingAppointmentEndTime > newAppointmentTime)
+                );
+            });
+        }
+
+
+        /**
+         * Limpia el formulario de citas.
+         */
+        function clearAppointmentForm() {
+            appointmentForm.reset();
+            // Ocultar todos los mensajes de error
+            document.querySelectorAll('#appointment-form p.text-red-500').forEach(p => p.classList.add('hidden'));
+        }
+
+        /**
+         * Renderiza el calendario semanal.
+         * @param {Date} startDate - La fecha de inicio de la semana a mostrar.
+         */
+        function renderCalendar(startDate) {
+            calendarGrid.innerHTML = ''; // Limpiar el calendario
+
+            const days = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+            const today = new Date();
+            today.setHours(0, 0, 0, 0); // Normalizar a inicio del día
+
+            // Calcular el inicio de la semana (domingo)
+            const startOfWeek = new Date(startDate);
+            startOfWeek.setDate(startDate.getDate() - startDate.getDay());
+            startOfWeek.setHours(0, 0, 0, 0);
+
+            // Calcular el fin de la semana (sábado)
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            endOfWeek.setHours(23, 59, 59, 999);
+
+            // Actualizar el rango de la semana
+            const options = { month: 'short', day: 'numeric' };
+            currentWeekRangeSpan.textContent = `${startOfWeek.toLocaleDateString('es-ES', options)} - ${endOfWeek.toLocaleDateString('es-ES', options)}`;
+
+            // Crear cabeceras de días
+            days.forEach(day => {
+                const dayHeader = document.createElement('div');
+                dayHeader.classList.add('calendar-header-cell', 'font-bold', 'text-sm', 'text-gray-700', 'dark:text-gray-200');
+                dayHeader.textContent = day;
+                calendarGrid.appendChild(dayHeader);
+            });
+
+            // Crear celdas de tiempo (horas) y celdas de día
+            for (let hour = 8; hour <= 18; hour++) { // Horario de 8 AM a 6 PM
+                // Celda de la hora
+                const timeCell = document.createElement('div');
+                timeCell.classList.add('calendar-time-cell', 'text-xs', 'text-gray-500', 'dark:text-gray-400', 'font-medium');
+                timeCell.textContent = `${hour}:00`;
+                calendarGrid.appendChild(timeCell);
+
+                // Celdas para cada día de la semana
+                for (let i = 0; i < 7; i++) {
+                    const currentDay = new Date(startOfWeek);
+                    currentDay.setDate(startOfWeek.getDate() + i);
+                    currentDay.setHours(hour, 0, 0, 0); // Establecer la hora para la celda
+
+                    const dayCell = document.createElement('div');
+                    dayCell.classList.add('calendar-day-cell', 'border-t', 'border-gray-200', 'dark:border-gray-700', 'relative', 'p-1', 'flex', 'flex-col', 'items-center', 'justify-start');
+                    dayCell.dataset.date = currentDay.toISOString().split('T')[0]; // Almacenar la fecha para referencia
+                    dayCell.dataset.hour = hour;
+
+                    // Resaltar el día actual
+                    if (currentDay.toDateString() === today.toDateString()) {
+                        dayCell.classList.add('bg-blue-50', 'dark:bg-blue-900', 'border-blue-300', 'dark:border-blue-700');
+                    } else {
+                        dayCell.classList.add('bg-white', 'dark:bg-gray-800');
+                    }
+
+                    calendarGrid.appendChild(dayCell);
+                }
+            }
+
+            // Colocar las citas en el calendario
+            appointments.forEach(appointment => {
+                const apptDateTime = new Date(appointment.datetime);
+                const apptDay = apptDateTime.getDay(); // 0 (Domingo) a 6 (Sábado)
+                const apptHour = apptDateTime.getHours();
+
+                // Asegurarse de que la cita esté dentro de la semana actual del calendario
+                if (apptDateTime >= startOfWeek && apptDateTime <= endOfWeek) {
+                    const dayCell = calendarGrid.querySelector(`[data-date="${apptDateTime.toISOString().split('T')[0]}"][data-hour="${apptHour}"]`);
+                    if (dayCell) {
+                        const doctor = doctors.find(d => d.id === appointment.doctorId);
+                        const doctorName = doctor ? doctor.name : 'Médico Desconocido';
+
+                        const appointmentSlot = document.createElement('div');
+                        appointmentSlot.classList.add('appointment-slot');
+                        appointmentSlot.innerHTML = `
+                            <p class="font-semibold">${appointment.patient}</p>
+                            <p class="text-xs">Dr. ${doctorName}</p>
+                            <p class="text-xs">${apptDateTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}</p>
+                            <span class="badge ${getBadgeClass(appointment.status)} text-xs font-semibold px-2 py-0.5 rounded-full absolute bottom-1 right-1">${getStatusText(appointment.status)}</span>
+                        `;
+                        appointmentSlot.dataset.id = appointment.id;
+                        appointmentSlot.dataset.patient = appointment.patient;
+                        appointmentSlot.dataset.doctor = doctorName;
+                        appointmentSlot.dataset.datetime = appointment.datetime;
+                        appointmentSlot.dataset.reason = appointment.reason;
+                        appointmentSlot.dataset.status = appointment.status;
+
+                        appointmentSlot.addEventListener('click', (e) => showAppointmentDetails(e.currentTarget));
+                        dayCell.appendChild(appointmentSlot);
+                    }
+                }
+            });
+        }
+
+        /**
+         * Muestra los detalles de una cita en un modal y permite cambiar su estado.
+         * @param {HTMLElement} appointmentSlotElement - El elemento del slot de la cita.
+         */
+        function showAppointmentDetails(appointmentSlotElement) {
+            const id = appointmentSlotElement.dataset.id;
+            const patient = appointmentSlotElement.dataset.patient;
+            const doctor = appointmentSlotElement.dataset.doctor;
+            const datetime = new Date(appointmentSlotElement.dataset.datetime);
+            const reason = appointmentSlotElement.dataset.reason;
+            let status = appointmentSlotElement.dataset.status;
+
+            const formattedDateTime = datetime.toLocaleDateString('es-ES', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+            });
+
+            const statusOptions = `
+                <option value="pending" ${status === 'pending' ? 'selected' : ''}>Pendiente</option>
+                <option value="confirmed" ${status === 'confirmed' ? 'selected' : ''}>Confirmada</option>
+                <option value="cancelled" ${status === 'cancelled' ? 'selected' : ''}>Cancelada</option>
+            `;
+
+            showConfirmationModal(`
+                <p class="font-bold text-gray-900 dark:text-gray-100 mb-2">Detalles de la Cita</p>
+                <p><strong>Paciente:</strong> ${patient}</p>
+                <p><strong>Médico:</strong> ${doctor}</p>
+                <p><strong>Fecha/Hora:</strong> ${formattedDateTime}</p>
+                <p><strong>Motivo:</strong> ${reason}</p>
+                <div class="mt-4">
+                    <label for="appointment-status-change" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Cambiar Estado:</label>
+                    <select id="appointment-status-change" class="w-full p-2 border rounded-md focus:ring-primary-blue">
+                        ${statusOptions}
+                    </select>
+                </div>
+            `, () => {
+                // Esta función se ejecuta al confirmar
+                const newStatus = document.getElementById('appointment-status-change').value;
+                const appointmentIndex = appointments.findIndex(app => app.id === id);
+                if (appointmentIndex !== -1 && appointments[appointmentIndex].status !== newStatus) {
+                    appointments[appointmentIndex].status = newStatus;
+                    saveData('appointments', appointments);
+                    renderCalendar(currentCalendarWeek);
+                    updateDashboardSummary();
+                    showInfoModal('Estado de la cita actualizado.');
+                }
+            });
+
+            // Ajustar el modal para mostrar los detalles y el selector de estado
+            modalConfirmBtn.textContent = 'Guardar Cambios';
+            modalCancelBtn.textContent = 'Cerrar';
+        }
+
+        /**
+         * Obtiene la clase CSS para el badge de estado.
+         * @param {string} status - El estado de la cita ('pending', 'confirmed', 'cancelled').
+         * @returns {string} La clase CSS correspondiente.
+         */
+        function getBadgeClass(status) {
+            switch (status) {
+                case 'pending': return 'badge-pending';
+                case 'confirmed': return 'badge-confirmed';
+                case 'cancelled': return 'badge-cancelled';
+                default: return '';
+            }
+        }
+
+        /**
+         * Obtiene el texto legible para el estado de la cita.
+         * @param {string} status - El estado de la cita.
+         * @returns {string} El texto legible.
+         */
+        function getStatusText(status) {
+            switch (status) {
+                case 'pending': return 'Pendiente';
+                case 'confirmed': return 'Confirmada';
+                case 'cancelled': return 'Cancelada';
+                default: return 'Desconocido';
+            }
+        }
+
+        // === Dashboard Principal ===
+
+        /**
+         * Actualiza el resumen de citas y médicos en el dashboard.
+         */
+        function updateDashboardSummary() {
+            totalDoctorsCount.textContent = doctors.length;
+            totalAppointmentsCount.textContent = appointments.length;
+
+            const now = new Date();
+            now.setHours(0, 0, 0, 0); // Normalizar a inicio del día
+
+            const todayEnd = new Date(now);
+            todayEnd.setHours(23, 59, 59, 999);
+
+            const todayAppointments = appointments.filter(app => {
+                const apptDate = new Date(app.datetime);
+                return apptDate >= now && apptDate <= todayEnd && app.status !== 'cancelled';
+            }).sort((a, b) => new Date(a.datetime) - new Date(b.datetime));
+
+            const upcomingAppointments = appointments.filter(app => {
+                const apptDate = new Date(app.datetime);
+                return apptDate > todayEnd && app.status !== 'cancelled';
+            }).sort((a, b) => new Date(a.datetime) - new Date(b.datetime)).slice(0, 5); // Mostrar las 5 próximas
+
+            renderAppointmentSummary(todayAppointments, todayAppointmentsList, 'No hay citas para hoy.');
+            renderAppointmentSummary(upcomingAppointments, upcomingAppointmentsList, 'No hay próximas citas.');
+        }
+
+        /**
+         * Renderiza una lista de citas en el dashboard.
+         * @param {Array<Object>} apptList - La lista de citas a renderizar.
+         * @param {HTMLElement} containerElement - El contenedor donde renderizar.
+         * @param {string} emptyMessage - Mensaje a mostrar si la lista está vacía.
+         */
+        function renderAppointmentSummary(apptList, containerElement, emptyMessage) {
+            containerElement.innerHTML = '';
+            if (apptList.length === 0) {
+                containerElement.innerHTML = `<p class="text-sm text-gray-500 dark:text-gray-400">${emptyMessage}</p>`;
+                return;
+            }
+
+            apptList.forEach(appt => {
+                const doctor = doctors.find(d => d.id === appt.doctorId);
+                const doctorName = doctor ? doctor.name : 'Médico Desconocido';
+                const apptDateTime = new Date(appt.datetime);
+                const formattedTime = apptDateTime.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                const formattedDate = apptDateTime.toLocaleDateString('es-ES', { month: 'short', day: 'numeric' });
+
+                const item = document.createElement('div');
+                item.classList.add('flex', 'items-center', 'justify-between', 'py-2', 'border-b', 'border-gray-100', 'dark:border-gray-700', 'last:border-b-0');
+                item.innerHTML = `
+                    <div>
+                        <p class="font-medium text-gray-800 dark:text-gray-100">${appt.patient}</p>
+                        <p class="text-sm text-gray-600 dark:text-gray-300">Dr. ${doctorName} - ${formattedTime} (${formattedDate})</p>
+                    </div>
+                    <span class="badge ${getBadgeClass(appt.status)} text-xs font-semibold px-2 py-0.5 rounded-full">${getStatusText(appt.status)}</span>
+                `;
+                containerElement.appendChild(item);
+            });
+        }
+
+        // === Inicialización y Event Listeners ===
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeDarkMode(); // Cargar la preferencia de modo oscuro
+
+            // Cargar datos al iniciar
+            doctors = loadData('doctors');
+            appointments = loadData('appointments');
+
+            // Inicializar vistas y resúmenes
+            switchView('dashboard'); // Mostrar el dashboard por defecto
+            updateDashboardSummary();
+
+            // Event Listeners para el sidebar
+            sidebarToggleOpen.addEventListener('click', () => {
+                sidebar.classList.remove('collapsed');
+                document.querySelector('.main-content-wrapper').classList.remove('md:ml-0');
+                document.querySelector('.main-content-wrapper').classList.add('md:ml-64');
+            });
+            sidebarToggleClose.addEventListener('click', () => {
+                sidebar.classList.add('collapsed');
+                document.querySelector('.main-content-wrapper').classList.remove('md:ml-64');
+                document.querySelector('.main-content-wrapper').classList.add('md:ml-0');
+            });
+
+            // Event Listener para el toggle de modo oscuro
+            darkModeToggle.addEventListener('click', toggleDarkMode);
+
+            // Event Listeners para cambiar de vista
+            viewButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    switchView(button.dataset.view);
+                });
+            });
+
+            // Event Listeners para el Módulo Médicos
+            doctorForm.addEventListener('submit', handleDoctorFormSubmit);
+            clearDoctorFormBtn.addEventListener('click', clearDoctorForm);
+            doctorSearchInput.addEventListener('input', filterDoctors);
+
+            // Event Listeners para el Módulo Citas
+            appointmentForm.addEventListener('submit', handleAppointmentFormSubmit);
+            clearAppointmentFormBtn.addEventListener('click', clearAppointmentForm);
+            prevWeekBtn.addEventListener('click', () => {
+                currentCalendarWeek.setDate(currentCalendarWeek.getDate() - 7);
+                renderCalendar(currentCalendarWeek);
+            });
+            nextWeekBtn.addEventListener('click', () => {
+                currentCalendarWeek.setDate(currentCalendarWeek.getDate() + 7);
+                renderCalendar(currentCalendarWeek);
+            });
+            urgentAppointmentBtn.addEventListener('click', () => {
+                switchView('appointments');
+                // Opcional: pre-rellenar algo o resaltar el formulario de cita
+                showInfoModal('¡Modo de cita urgente activado! Por favor, ingrese los detalles de la cita.');
+                appointmentPatientInput.focus();
+            });
+
+            // Validación en tiempo real para formularios
+            doctorNameInput.addEventListener('input', () => validateField(doctorNameInput, document.getElementById('doctor-name-error')));
+            doctorSpecialtyInput.addEventListener('input', () => validateField(doctorSpecialtyInput, document.getElementById('doctor-specialty-error')));
+            doctorPhoneInput.addEventListener('input', () => validatePhone(doctorPhoneInput, document.getElementById('doctor-phone-error')));
+            doctorEmailInput.addEventListener('input', () => validateEmail(doctorEmailInput, document.getElementById('doctor-email-error')));
+
+            appointmentPatientInput.addEventListener('input', () => validateField(appointmentPatientInput, document.getElementById('appointment-patient-error')));
+            appointmentDoctorSelect.addEventListener('change', () => validateField(appointmentDoctorSelect, document.getElementById('appointment-doctor-error')));
+            appointmentDatetimeInput.addEventListener('input', () => validateDateTime(appointmentDatetimeInput, document.getElementById('appointment-datetime-error')));
+            appointmentReasonInput.addEventListener('input', () => validateField(appointmentReasonInput, document.getElementById('appointment-reason-error')));
+
+            // Establecer la fecha mínima para el selector de fecha y hora
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const day = now.getDate().toString().padStart(2, '0');
+            const hours = now.getHours().toString().padStart(2, '0');
+            const minutes = now.getMinutes().toString().padStart(2, '0');
+            appointmentDatetimeInput.min = `${year}-${month}-${day}T${hours}:${minutes}`;
+
+            // Asegurar que el sidebar esté colapsado por defecto en móviles
+            if (window.innerWidth < 768) {
+                sidebar.classList.add('collapsed');
+                document.querySelector('.main-content-wrapper').classList.remove('md:ml-64');
+                document.querySelector('.main-content-wrapper').classList.add('md:ml-0');
+            }
+        });
+    </script>
+</body>
+</html>
