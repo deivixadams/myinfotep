@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Control CRM</title>
+    <!-- Carga de Tailwind CSS desde CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0f4f8; /* Fondo claro */
+        }
+        /* Estilos personalizados para el gráfico de Leads (círculo) */
+        .leads-circle {
+            position: relative;
+            width: 80px; /* Tamaño del círculo */
+            height: 80px;
+            border-radius: 50%;
+            background: conic-gradient(#3b82f6 0% 75%, #e2e8f0 75% 100%); /* 75% azul, 25% gris */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .leads-circle::before {
+            content: '';
+            position: absolute;
+            width: 60px; /* Tamaño del círculo interior */
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        .leads-circle span {
+            position: relative;
+            z-index: 10;
+            font-weight: 600;
+            color: #1f2937; /* Color del texto */
+        }
+
+        /* Estilos para el gráfico de líneas */
+        .line-chart-svg {
+            width: 100%;
+            height: 100%;
+        }
+        .line-chart-path {
+            fill: none;
+            stroke: #3b82f6; /* Color de la línea azul */
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        /* Estilos para el gráfico de barras */
+        .bar-chart-svg {
+            width: 100%;
+            height: 100%;
+        }
+        .bar-chart-bar {
+            fill: #3b82f6; /* Color de las barras azul */
+            transition: fill 0.3s ease;
+        }
+        .bar-chart-bar:hover {
+            fill: #2563eb; /* Azul más oscuro al pasar el ratón */
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
+        <!-- Encabezado del Panel de Control -->
+        <header class="bg-blue-800 text-white p-4 flex flex-col md:flex-row items-center justify-between rounded-t-xl">
+            <h1 class="text-2xl font-semibold mb-2 md:mb-0">CRM DASHBOARD</h1>
+            <nav class="flex space-x-4">
+                <a href="#" class="px-3 py-1 rounded-md bg-blue-700 hover:bg-blue-600 transition-colors">DASHBOARD</a>
+                <a href="#" class="px-3 py-1 rounded-md hover:bg-blue-700 transition-colors">PRODUCTS</a>
+                <a href="#" class="px-3 py-1 rounded-md hover:bg-blue-700 transition-colors">REPORTS</a>
+            </nav>
+        </header>
+
+        <!-- Contenido principal del Panel de Control -->
+        <main class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+            <!-- Tarjeta de Ventas Totales -->
+            <div class="bg-gray-100 p-6 rounded-lg shadow-sm flex flex-col justify-between">
+                <h2 class="text-lg font-medium text-gray-700 mb-2">TOTAL SALES</h2>
+                <p class="text-4xl font-bold text-gray-900 mb-2">$56,400</p>
+                <p class="text-green-600 text-sm font-semibold flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>
+                    10% THIS MONTH
+                </p>
+            </div>
+
+            <!-- Tarjeta de Resumen de Ventas (Gráfico de Líneas) -->
+            <div class="md:col-span-2 bg-gray-100 p-6 rounded-lg shadow-sm">
+                <h2 class="text-lg font-medium text-gray-700 mb-4">SALES OVERVIEW</h2>
+                <!-- Gráfico de líneas SVG -->
+                <div class="w-full h-40 bg-white rounded-md flex items-center justify-center p-4">
+                    <svg class="line-chart-svg" viewBox="0 0 100 50" preserveAspectRatio="none">
+                        <!-- Eje X -->
+                        <line x1="0" y1="45" x2="100" y2="45" stroke="#e2e8f0" stroke-width="0.5"/>
+                        <!-- Línea del gráfico -->
+                        <path class="line-chart-path" d="M0 40 Q20 10, 40 30 T80 20 Q90 25, 100 15" />
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Productos Principales (Tabla) -->
+            <div class="md:col-span-3 bg-gray-100 p-6 rounded-lg shadow-sm">
+                <h2 class="text-lg font-medium text-gray-700 mb-4">TOP PRODUCTS</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full bg-white rounded-md">
+                        <thead>
+                            <tr class="bg-gray-200 text-gray-700 uppercase text-sm leading-normal">
+                                <th class="py-3 px-6 text-left">PRODUCT</th>
+                                <th class="py-3 px-6 text-left">SALES</th>
+                                <th class="py-3 px-6 text-left">TREND</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-gray-600 text-sm font-light">
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left whitespace-nowrap">Product A</td>
+                                <td class="py-3 px-6 text-left">$15,200</td>
+                                <td class="py-3 px-6 text-left">
+                                    <svg class="w-5 h-5 text-green-500 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-9a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left whitespace-nowrap">Product B</td>
+                                <td class="py-3 px-6 text-left">$11,800</td>
+                                <td class="py-3 px-6 text-left">
+                                    <svg class="w-5 h-5 text-green-500 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-9a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                                </td>
+                            </tr>
+                            <tr class="border-b border-gray-200 hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left whitespace-nowrap">Product C</td>
+                                <td class="py-3 px-6 text-left">$9,600</td>
+                                <td class="py-3 px-6 text-left">
+                                    <svg class="w-5 h-5 text-green-500 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 11l3-3m0 0l3 3m-3-3v8m0-9a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-100">
+                                <td class="py-3 px-6 text-left whitespace-nowrap">Product D</td>
+                                <td class="py-3 px-6 text-left">$7,900</td>
+                                <td class="py-3 px-6 text-left">
+                                    <svg class="w-5 h-5 text-gray-500 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l-3 3m0 0l-3-3m3 3v8m0-9a9 9 0 110 18 9 9 0 010-18z"></path></svg>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Leads (superior) -->
+            <div class="bg-gray-100 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center text-center">
+                <h2 class="text-lg font-medium text-gray-700 mb-4">LEADS</h2>
+                <div class="leads-circle mb-2">
+                    <span>75</span>
+                </div>
+                <p class="text-sm text-gray-600">NEW LEADS</p>
+            </div>
+
+            <!-- Tarjeta de Ventas Farmacéuticas (Gráfico de Barras) -->
+            <div class="md:col-span-2 bg-gray-100 p-6 rounded-lg shadow-sm">
+                <h2 class="text-lg font-medium text-gray-700 mb-4">PHARMACEUTICAL SALES</h2>
+                <!-- Gráfico de barras SVG -->
+                <div class="w-full h-40 bg-white rounded-md flex items-end justify-around p-4">
+                    <svg class="bar-chart-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        <!-- Eje X -->
+                        <line x1="0" y1="95" x2="100" y2="95" stroke="#e2e8f0" stroke-width="0.5"/>
+                        <!-- Barras del gráfico -->
+                        <rect class="bar-chart-bar" x="5" y="60" width="8" height="35" rx="2" ry="2"/>
+                        <rect class="bar-chart-bar" x="15" y="70" width="8" height="25" rx="2" ry="2"/>
+                        <rect class="bar-chart-bar" x="25" y="50" width="8" height="45" rx="2" ry="2"/>
+                        <rect class="bar-chart-bar" x="35" y="65" width="8" height="30" rx="2" ry="2"/>
+                        <rect class="bar-chart-bar" x="45" y="75" width="8" height="20" rx="2" ry="2"/>
+                        <rect class="bar-chart-bar" x="55" y="40" width="8" height="55" rx="2" ry="2"/>
+                        <rect class="bar-chart-bar" x="65" y="30" width="8" height="65" rx="2" ry="2"/>
+                        <rect class="bar-chart-bar" x="75" y="20" width="8" height="75" rx="2" ry="2"/>
+                        <rect class="bar-chart-bar" x="85" y="10" width="8" height="85" rx="2" ry="2"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Tarjeta de Leads (inferior, duplicada del boceto) -->
+            <div class="bg-gray-100 p-6 rounded-lg shadow-sm flex flex-col items-center justify-center text-center">
+                <div class="leads-circle mb-2">
+                    <span>75</span>
+                </div>
+                <p class="text-sm text-gray-600">NEW LEADS</p>
+            </div>
+        </main>
+    </div>
+</body>
+</html>
